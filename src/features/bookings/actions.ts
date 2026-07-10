@@ -7,6 +7,7 @@ import { getCurrentUser } from '@/features/auth/lib/get-user';
 import { type BookingStatus } from '@/lib/supabase/database.types';
 
 import { PaymentService } from '@/features/payments/payment-service';
+import { NotificationService } from '@/features/notifications/notification-service';
 
 export interface BookingResult {
   ok: boolean;
@@ -72,6 +73,15 @@ export async function createBooking(input: {
     return { ok: false, error: 'Could not create the booking. Please try again.' };
   }
 
+  // Let the coach know a new request came in (channels are no-op until Phase 5).
+  await NotificationService.send({
+    to: input.coachId,
+    type: 'booking_created',
+    title: 'New booking request',
+    body: 'An athlete requested a session. Review and confirm it.',
+    data: { bookingId: data.id },
+  });
+
   revalidatePath(`/coaches/${input.coachId}`);
   revalidatePath('/bookings');
   return { ok: true, bookingId: data.id };
@@ -112,6 +122,14 @@ export async function updateBookingStatus(
     .eq('id', bookingId);
 
   if (error) return { ok: false, error: 'Update failed.' };
+
+  await NotificationService.send({
+    to: bookingId,
+    type: next === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
+    title: `Booking ${next}`,
+    body: `Your session was marked as ${next}.`,
+    data: { bookingId },
+  });
 
   revalidatePath('/bookings');
   revalidatePath('/dashboard');

@@ -124,7 +124,26 @@ Scripts: `dev` · `build` · `start` · `lint` · `typecheck` · `format` · `db
 ## Roadmap
 
 - **Phase 1 — Foundation** ✅ project setup · auth (email + Google) · database + RLS · navigation · responsive layout
-- **Phase 2** — coach & athlete profiles · search · advanced filters
-- **Phase 3** — booking engine · availability · calendar · session management
-- **Phase 4** — dashboards · admin panel · favorites · reviews
-- **Phase 5** — Stripe · notifications · chat · push · AI coach recommendations
+- **Phase 2 — Discovery** ✅ coach & athlete profiles · onboarding wizard · search · advanced filters · favorites
+- **Phase 3 — Booking** ✅ booking engine · availability editor · slot generation · session lifecycle · reviews
+- **Phase 4 — Ops** ✅ role-aware dashboards · admin panel (users/coaches/bookings/sports/reports) · favorites page
+- **Phase 5 — Infrastructure** ✅ scaffolds for Stripe · notifications · web push · chat · AI recommendations
+
+### Phase 5 infrastructure (ready to wire, not yet live)
+
+These are built against stable interfaces so turning them on requires no changes at the call sites:
+
+| Service | Location | Enable by |
+| ------- | -------- | --------- |
+| `PaymentService` | `features/payments/` | Implementing `StripeProvider`, setting `STRIPE_SECRET_KEY` |
+| Stripe webhook | `app/api/webhooks/stripe/route.ts` | Setting `STRIPE_WEBHOOK_SECRET` |
+| `NotificationService` | `features/notifications/` | Adding email/push transports |
+| `PushService` | `features/notifications/push-service.ts` | Setting `VAPID_PRIVATE_KEY` |
+| `ChatService` | `features/chat/` | Adding `conversations`/`messages` tables + Realtime |
+| AI recommendations | `features/recommendations/` | Swapping the heuristic for embeddings |
+
+## Key flows
+
+- **Book a session** — `/coaches` → filter → open a coach → pick a real free slot → confirm. The DB exclusion constraint guarantees no double-booking; booked slots vanish on refresh.
+- **Coach onboarding** — sign up as coach → 5-step wizard → publish → set availability → receive bookings.
+- **Admin** — sign in as an `admin` role user → `/admin` for KPIs, user/coach/booking management and the data-driven sports catalogue.

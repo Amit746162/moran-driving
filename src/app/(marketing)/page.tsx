@@ -6,6 +6,9 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { HeroSearch } from '@/features/marketing/hero-search';
 import { APP_TAGLINE } from '@/lib/constants';
+import { recommendCoaches } from '@/features/recommendations/recommend';
+import { getFavoriteIds } from '@/features/favorites/queries';
+import { CoachCard } from '@/features/coaches/components/coach-card';
 
 /** Landing page. Server Component — loads the live sports catalogue. */
 export default async function HomePage() {
@@ -17,6 +20,10 @@ export default async function HomePage() {
     .order('sort_order');
 
   const sportList = sports ?? [];
+  const [recommended, favorites] = await Promise.all([
+    recommendCoaches({ limit: 3 }),
+    getFavoriteIds(),
+  ]);
 
   return (
     <>
@@ -60,6 +67,23 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Recommended coaches (AI-ranked heuristic) */}
+      {recommended.length > 0 && (
+        <section className="container py-12">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Recommended for you</h2>
+            <Link href="/coaches" className="text-sm font-medium text-primary hover:underline">
+              See all coaches
+            </Link>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {recommended.map((coach) => (
+              <CoachCard key={coach.id} coach={coach} isFavorite={favorites.has(coach.id)} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* How it works */}
       <section className="container py-16">
