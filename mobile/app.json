@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Coachly",
+    "slug": "coachly",
+    "scheme": "coachly",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#EC5F43",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.coachly.app"
+    },
+    "android": {
+      "package": "dev.coachly.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#EC5F43"
+      }
+    },
+    "plugins": ["expo-router"]
+  }
+}
